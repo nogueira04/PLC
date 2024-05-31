@@ -2,5 +2,9 @@ type Comando = String
 type Valor = Int
 
 executa :: [(Comando, Valor)] -> Int
-executa [] = 0
-executa (x:xs) = 
+executa xs = foldl (\acc (comando, valor) -> case comando of
+    "Multiplica" -> acc * valor
+    "Soma" -> acc + valor
+    "Subtrai" -> acc - valor
+    "Divide" -> if valor == 0 then -666 else acc `div` valor
+  ) 0 xs
