@@ -2,28 +2,41 @@ wordFrequency :: String -> [String] -> Int
 wordFrequency str [] = 0
 wordFrequency str (x:xs) = (if str == x then 1 else 0) + wordFrequency str xs
 
-palavraMaisFrequente :: [String] -> String
-palavraMaisFrequente [] = ""
-palavraMaisFrequente (x:xs)
-    | wordFrequency x xs > wordFrequency (palavraMaisFrequente xs) xs = x
-    | wordFrequency x xs == wordFrequency (palavraMaisFrequente xs) xs = if x >= palavraMaisFrequente xs then x else palavraMaisFrequente xs
-    | otherwise = palavraMaisFrequente xs
-
 removeStr :: String -> [String] -> [String]
 removeStr _ [] = []
 removeStr str (x:xs)
     | x == str = removeStr str xs
     | otherwise = x : removeStr str xs
 
-getFirstN :: Int -> [t] -> [t]
-getFirstN 0 _ = []
-getFirstN _ [] = []
-getFirstN n (x:xs) = x : getFirstN (pred n) xs
+type WordCount = [(String, Int)]
 
-palavrasFrequentesAux :: [String] -> [String]
+countFrequency :: [String] -> WordCount
+countFrequency [] = []
+countFrequency (x:xs) = (x, 1 + wordFrequency x xs) : countFrequency (removeStr x xs)
+
+maxFrequencyWord :: WordCount -> String
+maxFrequencyWord [] = ""
+maxFrequencyWord [x] = fst x
+maxFrequencyWord (x:xs)
+    | snd x > snd (head xs) = fst x
+    | snd x == snd (head xs) && fst x >= fst (head xs) = fst x
+    | otherwise = maxFrequencyWord xs
+
+removeWord :: String -> WordCount -> WordCount
+removeWord _ [] = []
+removeWord str (x:xs)
+    | fst x == str = removeWord str xs
+    | otherwise = x : removeWord str xs
+
+palavrasFrequentesAux :: WordCount -> [String]
 palavrasFrequentesAux [] = []
-palavrasFrequentesAux xs = palavraMaisFrequente xs : palavrasFrequentesAux (removeStr (palavraMaisFrequente xs) xs)
+palavrasFrequentesAux wc = let maxWord = maxFrequencyWord wc
+                            in maxWord : palavrasFrequentesAux (removeWord maxWord wc)
 
 palavrasFrequentes :: [String] -> [String]
 palavrasFrequentes [] = []
-palavrasFrequentes xs = getFirstN 3 (palavrasFrequentesAux xs)
+palavrasFrequentes xs = take 3 (palavrasFrequentesAux (countFrequency xs))
+
+main = do
+    lista <- getLine
+    print $ palavrasFrequentes (read lista :: [String])
